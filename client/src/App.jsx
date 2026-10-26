@@ -9,7 +9,9 @@ function App() {
       .then(res => res.json())
       .then(data => {
         console.log(data);
-        setProducts(data);
+        // Backend যেভাবেই data দিক, এটা handle করবে
+        const list = Array.isArray(data) ? data : (data.products || data.data || []);
+        setProducts(list);
       })
       .catch(err => console.error(err));
   }, []);
@@ -25,12 +27,12 @@ function App() {
 
       <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-6">
         {products.length === 0 && <p className="col-span-3 text-center text-zinc-500 mt-20">Loading products...</p>}
-        {products.map(product => (
-          <div key={product.id} className="bg-zinc-900 p-3 rounded-2xl">
-            <img src={product.image} className="w-full h-56 object-cover rounded-xl mb-3" />
+        {products.map((product) => (
+          <div key={product._id || product.id} className="bg-zinc-900 p-3 rounded-2xl">
+            <img src={product.image} className="w-full h-56 object-cover rounded-xl mb-3" alt={product.name} />
             <h2 className="font-bold">{product.name}</h2>
             <p className="text-zinc-400">${product.price}</p>
-            <button onClick={() => setCart(cart + 1)} className="mt-2 w-full bg-white text-black py-2 rounded-full font-bold">
+            <button onClick={() => setCart(cart + 1)} className="mt-2 w-full bg-white text-black py-2 rounded-full font-bold hover:bg-zinc-200 transition">
               Add to Cart
             </button>
           </div>
