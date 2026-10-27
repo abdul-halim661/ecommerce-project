@@ -1,32 +1,44 @@
-import { useEffect, useState } from 'react'
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
-function App() {
-  const [products, setProducts] = useState([])
-  const API = "https://aura-ecommerce-ww1b.onrender.com/api/products"
+import authRoutes from './routes/auth.js';
+import productRoutes from './routes/products.js';
+import orderRoutes from './routes/orders.js';
 
-  useEffect(() => {
-    fetch(API)
-      .then(res => res.json())
-      .then(data => setProducts(data))
-      .catch(err => console.error(err))
-  }, [])
+const app = express();
 
-  return (
-    <div style={{ background: '#0a0a0a', color: 'white', minHeight: '100vh', padding: '20px' }}>
-      <h1 style={{ fontSize: '32px', fontWeight: 'bold' }}>AURA.STORE</h1>
-      <p>Data coming from {API}</p>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '30px' }}>
-        {products.map(p => (
-          <div key={p.id} style={{ background: '#1a1a1a', padding: '15px', borderRadius: '10px' }}>
-            <img src={p.image} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }} />
-            <h3 style={{ marginTop: '10px' }}>{p.name}</h3>
-            <p>৳ {p.price}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+// Security Middleware
+app.use(helmet());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true
+}));
 
-export default App
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+});
+app.use(limiter);
+
+app.use(express.json());
+app.use(cookieParser());
+
+// Routes
+app.get('/', (req, res) => {
+  res.json({ message: 'Aura E-commerce API Running...' });
+});
+
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+
+// Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something broke!' });
+});
+
+export default app;
