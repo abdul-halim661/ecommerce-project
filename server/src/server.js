@@ -1,22 +1,20 @@
-import express from 'express';
-import cors from 'cors';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import app from './app.js';
 
-const app = express();
-
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-
-app.get('/', (req, res) => {
-  res.send('AURA API Running 🔥');
-});
-
-app.get('/api/products', (req, res) => {
-  res.json([
-    { id: 1, name: "Oversized Hoodie", price: 2850, image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500" },
-    { id: 2, name: "Cargo Pants", price: 3200, image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500" },
-    { id: 3, name: "Street Tee", price: 1500, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500" }
-  ]);
-});
+dotenv.config();
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/aura-ecommerce';
+
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log('✅ MongoDB Connected');
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB Connection Failed:', err.message);
+    process.exit(1);
+  });
